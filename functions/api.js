@@ -1,50 +1,29 @@
-const express = require('express');
-const serverless = require('serverless-http');
-const app = express();
-const router = express.Router();
+const TelegramBot = require('node-telegram-bot-api');
 
-let records = [];
+// replace the value below with the Telegram token you receive from @BotFather
+const token = 'YOUR_TELEGRAM_BOT_TOKEN';
 
-//Get all students
-router.get('/', (req, res) => {
-  res.send('App is running..');
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, {polling: true});
+
+// Matches "/echo [whatever]"
+bot.onText(/\/echo (.+)/, (msg, match) => {
+  // 'msg' is the received Message from Telegram
+  // 'match' is the result of executing the regexp above on the text content
+  // of the message
+
+  const chatId = msg.chat.id;
+  const resp = match[1]; // the captured "whatever"
+
+  // send back the matched "whatever" to the chat
+  bot.sendMessage(chatId, resp);
 });
 
-//Create new record
-router.post('/add', (req, res) => {
-  res.send('New record added.');
-});
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
 
-//delete existing record
-router.delete('/', (req, res) => {
-  res.send('Deleted existing record');
+  // send a message to the chat acknowledging receipt of their message
+  bot.sendMessage(chatId, 'Received your message');
 });
-
-//updating existing record
-router.put('/', (req, res) => {
-  res.send('Updating existing record');
-});
-
-//showing demo records
-router.get('/demo', (req, res) => {
-  res.json([
-    {
-      id: '001',
-      name: 'Smith',
-      email: 'smith@gmail.com',
-    },
-    {
-      id: '002',
-      name: 'Sam',
-      email: 'sam@gmail.com',
-    },
-    {
-      id: '003',
-      name: 'lily',
-      email: 'lily@gmail.com',
-    },
-  ]);
-});
-
-app.use('/.netlify/functions/api', router);
-module.exports.handler = serverless(app);
